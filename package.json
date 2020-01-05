@@ -2,7 +2,7 @@
   "name": "glock-bot",
   "version": "1.0.0",
   "description": "GlockBot is a currently developing Minigame Discord Bot.",
-  "main": "index.js",
+  "main": "glockbot.js",
   "dependencies": {
     "discord-command-parser": "^1.3.3",
     "discord.js": "^11.5.1",

@@ -16,8 +16,30 @@ const KILL_PHRASE = [
 const SCORE_TIMER = 10000;
 const BACKFIRE_KILLS = 2;
 const COMMAND_INFO = JSON.parse(fs.readFileSync("commands-info.json"));
+const DISCORD_API_TOKEN = getAPIToken();
 
 var database = new Database();
+
+function getAPIToken()
+{
+    let token = undefined;
+    if (process.env.NODE_ENV == "production")
+    {
+        token = process.env.PROD_DC_API_TOKEN;
+        if (token == undefined)
+        {
+            token = process.env.DC_API_TOKEN;
+        }
+    }else{
+        token = process.env.DEV_DC_API_TOKEN;
+        if (token == undefined)
+        {
+            token = process.env.DC_API_TOKEN;
+        }
+    }
+
+    return token;
+}
 
 function isGlock(msg)
 {
@@ -234,13 +256,13 @@ process.on('exit', function(code) {
     });
 });
 
-if (process.env.DC_API_TOKEN == undefined || process.env.DC_API_TOKEN == "")
+if (DISCORD_API_TOKEN === undefined)
 {
-    console.error("ENTER YOUR DISCORD BOT TOKEN IN ./.ENV AS DC_API_TOKEN");
+    console.error("PLEASE ENTER YOUR BOT TOKEN IN THE .ENV FILE");
 }else{
     database.open().then(() => {
         database.vacuum().then(()=>{
-            client.login(process.env.DC_API_TOKEN);
+            client.login(DISCORD_API_TOKEN);
         });
     });
 }

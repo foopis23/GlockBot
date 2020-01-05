@@ -56,52 +56,56 @@ async function glockHandler(msg)
     let guildID = msg.guild.id;
     let channelID = msg.channel.id;
     let userID = msg.member.id;
-    let user = await (database.getUser(userID, guildID));
-    if (user.status == 0) return;
+    try{
+        let user = await (database.getUser(userID, guildID));
+        if (user.status == 0) return;
+    }catch(err){return;}
 
-    database.removeKillRequests(guildID, channelID).then(async (rows) => {
-        let killerMember = await msg.guild.fetchMember(userID, true);
-        let killerName = killerMember.displayName;
-        if (rows && rows.length>0)
-        {
-            let names = "";
-    
-            for (let i=0; i<rows.length; i++)
-            {   
-                $killed = await (database.killUser(rows[i].userID, guildID, killerName));
-    
-                if ($killed)
-                {
-                    let member = await msg.guild.fetchMember(rows[i].userID, true);
-                    names += member.displayName;
-    
-                    if (i != rows.length-1)
+    try{
+        database.removeKillRequests(guildID, channelID).then(async (rows) => {
+            let killerMember = await msg.guild.fetchMember(userID, true);
+            let killerName = killerMember.displayName;
+            if (rows && rows.length>0)
+            {
+                let names = "";
+        
+                for (let i=0; i<rows.length; i++)
+                {   
+                    $killed = await (database.killUser(rows[i].userID, guildID, killerName));
+        
+                    if ($killed)
                     {
-                        names += ", ";
+                        let member = await msg.guild.fetchMember(rows[i].userID, true);
+                        names += member.displayName;
+        
+                        if (i != rows.length-1)
+                        {
+                            names += ", ";
+                        }
                     }
                 }
-            }
-
-            if (names !== "")
-            {
-                msg.channel.send(killerName + " 🔫💀 " + names);
-            }
-        }else{
-            let backfires = await (database.backfireUser(userID, guildID));
-            let backfireEmojis = "💥".repeat(backfires);
-            if (backfires >= BACKFIRE_KILLS)
-            {
-                $killed = await (database.killUser(userID, guildID, "Backfired!"));
-
-                if ($killed)
+    
+                if (names !== "")
                 {
-                    msg.channel.send(killerName + "'s gun backfired"+ backfireEmojis +"💀");
+                    msg.channel.send(killerName + " 🔫💀 " + names);
                 }
             }else{
-                msg.channel.send(killerName + "'s gun backfired" + backfireEmojis);
+                let backfires = await (database.backfireUser(userID, guildID));
+                let backfireEmojis = "💥".repeat(backfires);
+                if (backfires >= BACKFIRE_KILLS)
+                {
+                    $killed = await (database.killUser(userID, guildID, "Backfired!"));
+    
+                    if ($killed)
+                    {
+                        msg.channel.send(killerName + "'s gun backfired"+ backfireEmojis +"💀");
+                    }
+                }else{
+                    msg.channel.send(killerName + "'s gun backfired" + backfireEmojis);
+                }
             }
-        }
-    });
+        }).catch(() => {});
+    }catch(err){return;}
 }
 
 function isKillPhrase(msg)
@@ -119,65 +123,73 @@ async function killHandler(msg)
     let guildID = msg.guild.id;
     let channelID = msg.channel.id;
     let userID = msg.member.id;
-    let user = await (database.getUser(userID, guildID));
-    if (user.status == 0) return;
+    try{
+        let user = await (database.getUser(userID, guildID));
+        if (user.status == 0) return;
+    }catch(err){return}
 
-    database.killRequest(userID, guildID, channelID)
-    .then(() => {
-        (()=> {
-            return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    resolve();
-                }, SCORE_TIMER)
-            });
-        })()
+    try{
+        database.killRequest(userID, guildID, channelID)
         .then(() => {
-
-            database.deleteKillRequest(userID, guildID, channelID)
-            .then((isScore) => {
-
-                if (isScore)
-                {
-                    database.scoreUser(userID, guildID, 1).then(($score)=>{
-                        msg.channel.send(msg.member.displayName + " scored a point!");
-                    });
-                }
+            (()=> {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        resolve();
+                    }, SCORE_TIMER)
+                });
+            })()
+            .then(() => {
+    
+                database.deleteKillRequest(userID, guildID, channelID)
+                .then((isScore) => {
+    
+                    if (isScore)
+                    {
+                        database.scoreUser(userID, guildID, 1).then(($score)=>{
+                            msg.channel.send(msg.member.displayName + " scored a point!");
+                        }).catch((err) => {});
+                    }
+                }).catch((err) => {});
             });
-        });
-    });
+        }).catch((err) => {});
+    }catch(err){};
 }
 
 const commandHandlers = {
     "scoreboard": async function(parsed, msg)
     {
-        let rows = await (database.getAllUsers(msg.guild.id));
-        let scoreboard = [["", "Name", "Score", "Backfires", "Status"]];
-        if (rows)
-        {
-            
-            for(let i=0; i<rows.length; i++)
+        try{
+            let rows = await (database.getAllUsers(msg.guild.id));
+            let scoreboard = [["", "Name", "Score", "Backfires", "Status"]];
+            if (rows)
             {
-                let row = [];
-                let displayName = (await msg.guild.fetchMember(rows[i].userID, true)).displayName;
-                let score = rows[i].score;
-                let backfires = rows[i].backfires;
-                let status = (rows[i].status==1)? "Alive" : "Dead";
-                row.push((i + 1) + ".");
-                row.push(displayName);
-                row.push(score);
-                row.push(backfires);
-                row.push(status);
-                scoreboard.push(row);
+                
+                for(let i=0; i<rows.length; i++)
+                {
+                    let row = [];
+                    let displayName = (await msg.guild.fetchMember(rows[i].userID, true)).displayName;
+                    let score = rows[i].score;
+                    let backfires = rows[i].backfires;
+                    let status = (rows[i].status==1)? "Alive" : "Dead";
+                    row.push((i + 1) + ".");
+                    row.push(displayName);
+                    row.push(score);
+                    row.push(backfires);
+                    row.push(status);
+                    scoreboard.push(row);
+                }
+    
+                let output = "```" + table(scoreboard, {align: ['l', 'l', 'r', 'r', 'l']}) + "```";
+                msg.channel.send(output);
             }
-
-            let output = "```" + table(scoreboard, {align: ['l', 'l', 'r', 'r', 'l']}) + "```";
-            msg.channel.send(output);
-        }
+        }catch(err){};
     },
     "reset": async function(parsed, msg)
     {
-        await (database.resetAllUsers(msg.guild.id));
-        await (database.clearKillRequest(msg.guild.id));
+        try{
+            await (database.resetAllUsers(msg.guild.id));
+            await (database.clearKillRequest(msg.guild.id));
+        }catch(err){}
     },
     "help": async function(parsed, msg)
     {
@@ -253,7 +265,7 @@ client.on("guildDelete", guild => {
 process.on('exit', function(code) {
     database.close().then(() => {
         client.logout();
-    });
+    }).catch((err) => {});
 });
 
 if (DISCORD_API_TOKEN === undefined)
@@ -263,6 +275,6 @@ if (DISCORD_API_TOKEN === undefined)
     database.open().then(() => {
         database.vacuum().then(()=>{
             client.login(DISCORD_API_TOKEN);
-        });
-    });
+        }).catch((err) => {});
+    }).catch((err) => {});
 }

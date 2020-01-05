@@ -9,7 +9,7 @@ module.exports = class Database{
     {
         return new Promise((resolve, reject)=>{
             this.db = new sqlite3.Database("./db/database.db", (err) => {
-                if (err) reject(err);
+                if (err) reject(console.error(err.message));
                 resolve();
             });
         });
@@ -29,7 +29,7 @@ module.exports = class Database{
     {
         return new Promise((resolve, reject)=>{
             this.db.run("VACUUM", (err) => {
-                if (err) reject(err);
+                if (err) reject(console.error(err.message));
                 
                 resolve();
             });
@@ -127,14 +127,14 @@ module.exports = class Database{
             let sql = "SELECT * FROM " + KILL_REQUEST_TABLE_NAME + guildID + " WHERE userID = ?";
             let params = [userID];
             this.db.get(sql, params, (err, row) => {
-                if (err) return reject(err);
+                if (err) return reject(console.error(err.message));
 
                 if (row != undefined ) return resolve();
                 
                 sql = "INSERT INTO " + KILL_REQUEST_TABLE_NAME + guildID + "(userID,channelID) VALUES(?,?)";
                 params = [userID, channelID];
                 this.db.run(sql, params, (err) => {
-                    if (err) return reject(err);
+                    if (err) return reject(console.error(err.message));
 
                     return resolve();
                 });
@@ -156,7 +156,7 @@ module.exports = class Database{
                     sql = "INSERT INTO "+USER_TABLE_NAME + guildID+"(userID,score,backfires,status,causeOfDeath) VALUES(?,?,?,?,?)";
                     params = [userID, 0, 0, 1, null];
                     this.db.run(sql, params, (err) => {
-                        if (err) return reject(err);
+                        if (err) return reject(console.error(err.message));
 
                         return resolve();
                     });
@@ -182,7 +182,7 @@ module.exports = class Database{
         return new Promise((resolve, reject) => {
             let sql = "SELECT * FROM "+USER_TABLE_NAME + guildID+" ORDER BY score DESC";
             this.db.all(sql, (err, rows) => {
-                if (err) return reject(false);
+                if (err) return reject(console.error(err.message));
 
                 resolve(rows);
             })
@@ -197,7 +197,7 @@ module.exports = class Database{
                 let params = [userID];
     
                 this.db.get(sql, params, (err, row) =>{
-                    if (err) return reject(err);
+                    if (err) return reject(console.error(err.message));
     
                     return resolve(row);
                 });
@@ -223,7 +223,7 @@ module.exports = class Database{
                 let params = [userID];
 
                 this.db.run(sql, params, (err) => {
-                    if (err) reject(err);
+                    if (err) reject(console.error(err.message));
 
                     resolve();
                 });
@@ -237,7 +237,7 @@ module.exports = class Database{
             let sql = "UPDATE "+USER_TABLE_NAME + guildID+" SET score = 0, backfires = 0, status = 1, causeOfDeath = NULL";
 
             this.db.run(sql, (err) => {
-                if (err) reject(err);
+                if (err) reject(console.error(err.message));
 
                 resolve();
             });
@@ -250,14 +250,14 @@ module.exports = class Database{
             let sql = "SELECT * FROM " + KILL_REQUEST_TABLE_NAME + guildID + " WHERE userID = ? AND channelID = ?";
             let params = [userID, channelID];
             this.db.get(sql, params, (err, row) => {
-                if (err) return reject(false);
+                if (err) return reject(console.error(err.message));
 
                 if (row === undefined ) return resolve(false);
                 
                 sql = "DELETE FROM " + KILL_REQUEST_TABLE_NAME + guildID + " WHERE userID = ? and channelID = ?";
                 params = [userID, channelID];
                 this.db.run(sql, params, (err) => {
-                    if (err) return reject(err);
+                    if (err) return reject(console.error(err.message));
 
                     return resolve(true);
                 });
@@ -271,12 +271,12 @@ module.exports = class Database{
             let sql = "SELECT * FROM " + KILL_REQUEST_TABLE_NAME + guildID + " WHERE channelID = ?";
             let params = [channelID];
             this.db.all(sql, params, (err, rows) => {
-                if (err) return reject(false);
+                if (err) return reject(console.error(err.message));
                 
                 sql = "DELETE FROM " + KILL_REQUEST_TABLE_NAME + guildID + " WHERE channelID = ?";
                 params = [channelID];
                 this.db.run(sql, params, (err) => {
-                    if (err) return reject(false);
+                    if (err) return reject(console.error(err.message));
 
                     return resolve(rows);
                 });
@@ -289,10 +289,10 @@ module.exports = class Database{
         return new Promise((resolve, reject) => {
             let sql = "DELETE FROM "+ KILL_REQUEST_TABLE_NAME + guildID;
             this.db.run(sql, (err)=>{
-                if (err) return reject(err);
+                if (err) return reject(console.error(err.message));
 
                 this.db.run("VACUUM", (err) => {
-                    if (err) return reject(err);
+                    if (err) return reject(console.error(err.message));
 
                     resolve();
                 });
@@ -318,7 +318,7 @@ module.exports = class Database{
                 let params = [causeOfDeath, userID];
     
                 this.db.run(sql, params, (err) =>{
-                    if (err) return reject(false);
+                    if (err) return reject(console.error(err.message));
     
                     resolve(true);
                 });
@@ -334,7 +334,7 @@ module.exports = class Database{
                 let params = [null, userID];
     
                 this.db.run(sql, params, (err) =>{
-                    if (err) return reject(err);
+                    if (err) return reject(console.error(err.message));
     
                     resolve();
                 });
@@ -350,13 +350,13 @@ module.exports = class Database{
                 let params = [userID];
     
                 this.db.get(sql, params, (err, row) =>{
-                    if (err) return reject(err);
+                    if (err) return reject(console.error(err.message));
 
                     sql = "UPDATE "+USER_TABLE_NAME + guildID+" SET backfires = ? WHERE userID=?";
                     params = [row.backfires+1, userID];
 
                     this.db.run(sql, params, (err) => {
-                        if (err) return reject(err);
+                        if (err) return reject(console.error(err.message));
 
                         resolve(row.backfires+1);
                     });
@@ -374,13 +374,13 @@ module.exports = class Database{
                 let params = [userID];
     
                 this.db.get(sql, params, (err, row) =>{
-                    if (err) return reject(false);
+                    if (err) return reject(console.error(err.message));
 
                     sql = "UPDATE "+USER_TABLE_NAME + guildID+" SET score = ? WHERE userID=?";
                     params = [row.score+increament, userID];
 
                     this.db.run(sql, params, (err) => {
-                        if (err) return reject(false);
+                        if (err) return reject(console.error(err.message));
 
                         resolve(row.score+1);
                     });

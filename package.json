@@ -1,0 +1,27 @@
+{
+  "name": "glock-bot",
+  "version": "1.0.0",
+  "description": "GlockBot is a currently developing Minigame Discord Bot.",
+  "main": "index.js",
+  "dependencies": {
+    "discord-command-parser": "^1.3.3",
+    "discord.js": "^11.5.1",
+    "dotenv-defaults": "^1.0.3",
+    "sqlite3": "^4.1.1",
+    "text-table": "^0.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/foopis23/GlockBot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/foopis23/GlockBot/issues"
+  },
+  "homepage": "https://github.com/foopis23/GlockBot#readme"
+}

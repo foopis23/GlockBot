@@ -184,7 +184,10 @@ async function commandHandler(parsed, msg)
 //Events
 
 client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
+    client.guilds.forEach((value, key, map) => {
+        database.createGuildTables(key);
+    });
+    console.log(`Logged in as ${client.user.tag}!`);
 });
 
 client.on('message', msg => {
@@ -206,6 +209,25 @@ client.on('message', msg => {
     }
 });
 
+client.on('guildMemberAdd', member => {
+    console.log("outside this works");
+    if (member.id == client.user.id)
+    {
+        console.log("this works");
+
+    }
+});
+
+//joined a server
+client.on("guildCreate", guild => {
+    database.createGuildTables(guild.id);
+})
+
+//removed from a server
+client.on("guildDelete", guild => {
+    database.dropGuildTables(guild.id);
+})
+
 process.on('exit', function(code) {
     database.close().then(() => {
         client.logout();
@@ -217,12 +239,8 @@ if (process.env.DC_API_TOKEN == undefined || process.env.DC_API_TOKEN == "")
     console.error("ENTER YOUR DISCORD BOT TOKEN IN ./.ENV AS DC_API_TOKEN");
 }else{
     database.open().then(() => {
-        database.createUserTable().then(()=> {
-            database.createKillRequestTable().then(()=>{
-                database.vacuum().then(()=>{
-                    client.login(process.env.DC_API_TOKEN);
-                });
-            });
+        database.vacuum().then(()=>{
+            client.login(process.env.DC_API_TOKEN);
         });
-    })
+    });
 }

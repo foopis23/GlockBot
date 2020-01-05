@@ -12,6 +12,18 @@
             "usage": "reset",
             "description": "Resets the current game"
         },
+        "info":
+        {
+            "command": "info",
+            "usuage": "info",
+            "description": "Gets info about the bot"
+        },
+        "debug":
+        {
+            "command": "debug",
+            "usuage": "debug",
+            "description": "Gets Debug info you are having problems with your bot"
+        },
         "help":
         {
             "command": "help",

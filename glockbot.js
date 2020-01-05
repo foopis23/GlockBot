@@ -16,6 +16,7 @@ const KILL_PHRASE = [
 const SCORE_TIMER = 10000;
 const BACKFIRE_KILLS = 2;
 const COMMAND_INFO = JSON.parse(fs.readFileSync("commands-info.json"));
+const BOT_INFO = JSON.parse(fs.readFileSync("info.json"));
 const DISCORD_API_TOKEN = getAPIToken();
 
 var database = new Database();
@@ -190,6 +191,21 @@ const commandHandlers = {
             await (database.resetAllUsers(msg.guild.id));
             await (database.clearKillRequest(msg.guild.id));
         }catch(err){}
+    },
+    "info": async function(parsed, msg)
+    {
+        let output = "Hello, I'm GlockBot v" + process.env.VERSION +"\n";
+        output += "My creator's name is " + BOT_INFO["author"] + "\n";
+        output += "You can see my source, if you want to... 😳 " + BOT_INFO["github"];
+        msg.channel.send(output);
+    },
+    "debug": async function(parsed, msg)
+    {
+        let output = "```GuildID: " + msg.guild.id;
+        output += "\nMemberID: " + msg.member.id;
+        output += "\nVersion Number: " + process.env.VERSION + "```";
+        output += "\n```You can submit issues at " + BOT_INFO["github"] + "/issues```";
+        msg.channel.send(output);
     },
     "help": async function(parsed, msg)
     {

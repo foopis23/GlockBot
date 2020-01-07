@@ -1,0 +1,9 @@
+{
+    "vars": [
+        "user",
+        "killedUsers"
+    ],
+    "gobals": [
+        "version"   
+    ]
+}

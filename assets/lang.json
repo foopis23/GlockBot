@@ -1,0 +1,68 @@
+{
+    "EN": {
+        "score": "[{user}] scored a point!",
+        "shot": "[{user}] 🔫💀 [{killedUsers}]",
+        "backfire": "[{user}]'s gun backfired",
+        "glocks": [
+            "🔫"
+        ],
+        "killPhrases": [
+            "kill me"
+        ],
+        "commandTable": {
+            "command": "Command",
+            "usage": "Usage",
+            "desc": "Desc"
+        },
+        "commands": {
+            "scoreboard":
+            {
+                "command": "scoreboard",
+                "usage": "scoreboard",
+                "description": "Display the score of all members in the game currently on this server"
+            },
+            "reset":
+            {
+                "command": "reset",
+                "usage": "reset",
+                "description": "Resets the current game"
+            },
+            "info":
+            {
+                "command": "info",
+                "usage": "info",
+                "description": "Gets info about the bot"
+            },
+            "debug":
+            {
+                "command": "debug",
+                "usage": "debug",
+                "description": "Gets Debug info you are having problems with your bot"
+            },
+            "help":
+            {
+                "command": "help",
+                "usage": "help",
+                "description": "Get information on commands"
+            }
+        },
+        "errorMessages": {
+            "unknown": "Unknown Command... Try using help for a list of commands",
+            "incorrectUsage": "INCORRECT USAGE! Usage: "
+        },
+        "info": {
+            "author": "Eric Sexton (foopis23)",
+            "github": "https://github.com/foopis23/GlockBot",
+            "translator": "",
+            "full": "Hello, I'm GlockBot v[{version}]\nMy creator's name is Eric Sexton (foopis23)\nIt's not like I want you to see my source code... 😳 https://github.com/foopis23/GlockBot"
+        },
+        "scoreboard": {
+            "name": "Name",
+            "score": "Score",
+            "backfires": "Backfires",
+            "status": "Status",
+            "alive": "Alive",
+            "dead": "Dead"
+        }
+    }
+}

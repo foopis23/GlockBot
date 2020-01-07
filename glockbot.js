@@ -6,19 +6,17 @@ const fs = require('fs');
 const table = require('text-table');
 require('dotenv-defaults').config()
 
+const LANG = JSON.parse(fs.readFileSync("./assets/lang.json"));
+const LANG_VARS = JSON.parse(fs.readFileSync("./assets/lang-variables.json"));
+const LANG_GOBALS = {
+    "version": process.env.VERSION
+}
+const LANG_CODE = (process.env.LANG in LANG)? process.env.LANG : "EN";
+
 const PREFIX  = '?';
-const GLOCKS = [
-    "🔫"
-];
-const KILL_PHRASE = [
-    "kill me"
-];
 const SCORE_TIMER = 10000;
 const BACKFIRE_KILLS = 2;
-const COMMAND_INFO = JSON.parse(fs.readFileSync("commands-info.json"));
-const BOT_INFO = JSON.parse(fs.readFileSync("info.json"));
 const DISCORD_API_TOKEN = getAPIToken();
-
 var database = new Database();
 
 function getAPIToken()
@@ -42,11 +40,36 @@ function getAPIToken()
     return token;
 }
 
+function parseLang(lang, args)
+{
+    for(let i=0; i<LANG_VARS.vars.length; i++)
+    {
+        let key = LANG_VARS.vars[i];
+        if (!lang.includes(key))
+            continue;
+
+        let temp = "\\[{" + key + "}\\]";
+        lang = lang.replace(new RegExp(temp,"g"), args[key]);
+    }
+
+    for(let i=0; i<LANG_VARS.gobals.length; i++)
+    {
+        let key = LANG_VARS.gobals[i];
+        if (!lang.includes(key))
+            continue;
+
+        let temp = "\\[{" + key + "}\\]";
+        lang = lang.replace(new RegExp(temp,"g"), LANG_GOBALS[key]);
+    }
+
+    return lang
+}
+
 function isGlock(msg)
 {
-    for(let i=0; i < GLOCKS.length; i++)
+    for(let i=0; i < LANG[LANG_CODE]["glocks"].length; i++)
     {
-        if (msg.content.includes(GLOCKS[i])) return true;
+        if (msg.content.includes(LANG[LANG_CODE]["glocks"][i])) return true;
     }
     
     return false;
@@ -88,7 +111,8 @@ async function glockHandler(msg)
     
                 if (names !== "")
                 {
-                    msg.channel.send(killerName + " 🔫💀 " + names);
+                    let temp = parseLang(LANG[LANG_CODE]["shot"], {"user": msg.member.displayName, "killedUsers": names});
+                    msg.channel.send(temp);
                 }
             }else{
                 let backfires = await (database.backfireUser(userID, guildID));
@@ -99,10 +123,10 @@ async function glockHandler(msg)
     
                     if ($killed)
                     {
-                        msg.channel.send(killerName + "'s gun backfired"+ backfireEmojis +"💀");
+                        msg.channel.send(parseLang(LANG[LANG_CODE]["backfire"], {"user": msg.member.displayName})+ backfireEmojis +"💀");
                     }
                 }else{
-                    msg.channel.send(killerName + "'s gun backfired" + backfireEmojis);
+                    msg.channel.send(parseLang(LANG[LANG_CODE]["backfire"], {"user": msg.member.displayName}) + backfireEmojis);
                 }
             }
         }).catch(() => {});
@@ -111,9 +135,9 @@ async function glockHandler(msg)
 
 function isKillPhrase(msg)
 {
-    for(let i=0; i < KILL_PHRASE.length; i++)
+    for(let i=0; i < LANG[LANG_CODE]["killPhrases"].length; i++)
     {
-        if (msg.content.toLowerCase().includes(KILL_PHRASE[i])) return true;
+        if (msg.content.toLowerCase().includes(LANG[LANG_CODE]["killPhrases"])) return true;
     }
     
     return false;
@@ -161,7 +185,7 @@ const commandHandlers = {
     {
         try{
             let rows = await (database.getAllUsers(msg.guild.id));
-            let scoreboard = [["", "Name", "Score", "Backfires", "Status"]];
+            let scoreboard = [["", LANG[LANG_CODE]["scoreboard"]["name"], LANG[LANG_CODE]["scoreboard"]["score"], LANG[LANG_CODE]["scoreboard"]["backfires"], LANG[LANG_CODE]["scoreboard"]["status"]]];
             if (rows)
             {
                 
@@ -171,7 +195,7 @@ const commandHandlers = {
                     let displayName = (await msg.guild.fetchMember(rows[i].userID, true)).displayName;
                     let score = rows[i].score;
                     let backfires = rows[i].backfires;
-                    let status = (rows[i].status==1)? "Alive" : "Dead";
+                    let status = (rows[i].status==1)? LANG[LANG_CODE]["scoreboard"]["alive"] : LANG[LANG_CODE]["scoreboard"]["dead"];
                     row.push((i + 1) + ".");
                     row.push(displayName);
                     row.push(score);
@@ -194,26 +218,23 @@ const commandHandlers = {
     },
     "info": async function(parsed, msg)
     {
-        let output = "Hello, I'm GlockBot v" + process.env.VERSION +"\n";
-        output += "My creator's name is " + BOT_INFO["author"] + "\n";
-        output += "You can see my source, if you want to... 😳 " + BOT_INFO["github"];
-        msg.channel.send(output);
+        msg.channel.send(parseLang(LANG[LANG_CODE]["info"]["full"]));
     },
     "debug": async function(parsed, msg)
     {
         let output = "```GuildID: " + msg.guild.id;
         output += "\nMemberID: " + msg.member.id;
         output += "\nVersion Number: " + process.env.VERSION + "```";
-        output += "\n```You can submit issues at " + BOT_INFO["github"] + "/issues```";
+        output += "\n```You can submit issues at " + LANG[LANG_CODE]["info"]["github"] + "/issues```";
         msg.channel.send(output);
     },
     "help": async function(parsed, msg)
     {
-        let t = [["Command", "Usage", "Desc"]];
-        let commands = COMMAND_INFO.commands;
+        let t = [[LANG[LANG_CODE]["commandTable"]["command"], LANG[LANG_CODE]["commandTable"]["usage"], LANG[LANG_CODE]["commandTable"]["desc"]]];
+        let commands = LANG[LANG_CODE]["commands"];
         for (let i in commands)
         {
-            let row = [commands[i].command, commands[i].usage, commands[i].description];
+            let row = [commands[i].command, PREFIX + commands[i].usage, commands[i].description];
             t.push(row);
         }
         let output = "```" + table(t) + "```";
@@ -227,7 +248,7 @@ async function commandHandler(parsed, msg)
     {
         (commandHandlers[parsed.command])(parsed, msg);
     }else{
-        msg.channel.send(COMMAND_INFO.errorMessages["unknown"]);
+        msg.channel.send(LANG[LANG_CODE]["errorMessages"]["unknown"]);
     }
 }
 

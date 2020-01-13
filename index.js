@@ -184,8 +184,10 @@ async function commandHandler(parsed, msg)
 //Events
 
 client.on('ready', () => {
+    database.createSettingsTable();
     client.guilds.forEach((value, key, map) => {
         database.createGuildTables(key);
+        database.createGuildSettings(key);
     });
     console.log(`Logged in as ${client.user.tag}!`);
 });
@@ -209,23 +211,16 @@ client.on('message', msg => {
     }
 });
 
-client.on('guildMemberAdd', member => {
-    console.log("outside this works");
-    if (member.id == client.user.id)
-    {
-        console.log("this works");
-
-    }
-});
-
 //joined a server
 client.on("guildCreate", guild => {
+    database.createGuildSettings(guild.id);
     database.createGuildTables(guild.id);
 })
 
 //removed from a server
 client.on("guildDelete", guild => {
     database.dropGuildTables(guild.id);
+    database.deleteGuildSettings(guild.id);
 })
 
 process.on('exit', function(code) {

@@ -2,6 +2,7 @@ const sqlite3 = require("sqlite3");
 
 const USER_TABLE_NAME = "users";
 const KILL_REQUEST_TABLE_NAME = "killRequests";
+const SETTING_TABLE_NAME = "guildSettings";
 
 module.exports = class Database{
 
@@ -76,6 +77,11 @@ module.exports = class Database{
                 return resolve();
             });
         });
+    }
+
+    createSettingsTable()
+    {
+        let sql = "CREATE TABLE IF NOT EXISTS " + SETTING_TABLE_NAME + " (id INTEGER PRIMARY KEY AUTOINCREMENT, guildID TEXT NOT NULL, permaDeath INT DEFAULT 1, backfireAmount INT DEFAULT 2)";
     }
 
     dropGuildTables(guildID)
@@ -167,6 +173,32 @@ module.exports = class Database{
         });
     }
 
+    createGuildSettings(guildID)
+    {
+        return new Promise((resolve, reject) => {
+            let sql = "SELECT * FROM " + SETTING_TABLE_NAME + " WHERE guildID=?";
+            let params = [guildID];
+
+            this.db.get(sql, params, (err, row)=>{
+                if (err)
+                    return reject(err);
+                
+                if (row)
+                    return resolve();
+
+                let sql = "INSERT INTO " + SETTING_TABLE_NAME + "(guildID) VALUES(?)";
+                let params = [guildID];
+
+                this.db.run(sql, params, (err) => {
+                    if (err)
+                        return reject();
+
+                    return resolve();
+                }); 
+            });
+        });
+    }
+
     /*
     ..######...########.########
     .##....##..##..........##...
@@ -205,6 +237,36 @@ module.exports = class Database{
         });
     }
 
+    getSettings(guildID)
+    {
+        return new Promise((resolve, reject) => {
+            let sql = "SELECT * FROM " + SETTING_TABLE_NAME + " WHERE guildID=?";
+            let params = [guildID];
+            
+            this.db.get(sql, params, (err, row) => {
+                if (err)
+                    return reject(err);
+
+                return resolve(row);
+            });
+        });
+    }
+
+    getSetting(guildID, settingKey)
+    {
+        return new Promise((resolve, reject) => {
+            let sql = "SELECT ? FROM " + SETTING_TABLE_NAME + "WHERE guildID=?";
+            let params = [settingKey, guildID];
+
+            this.db.get(sql, params, (err, row) => {
+                if (err)
+                    return reject(err);
+
+                return resolve(row[settingKey]);
+            });
+        });
+    }
+
     /*
     .########..########.##.......########.########.########
     .##.....##.##.......##.......##..........##....##......
@@ -214,35 +276,6 @@ module.exports = class Database{
     .##.....##.##.......##.......##..........##....##......
     .########..########.########.########....##....########
     */
-
-    resetUser(userID, guildID)
-    {
-        return new Promise((resolve, reject) => {
-            this.userExist(userID, guildID).then(() => {
-                let sql = "UPDATE "+USER_TABLE_NAME + guildID+" SET score = 0, backfires = 0, status = 1, causeOfDeath = NULL WHERE userID=?";
-                let params = [userID];
-
-                this.db.run(sql, params, (err) => {
-                    if (err) reject(err);
-
-                    resolve();
-                });
-            });
-        });
-    }
-
-    resetAllUsers(guildID)
-    {
-        return new Promise((resolve, reject) => {
-            let sql = "UPDATE "+USER_TABLE_NAME + guildID+" SET score = 0, backfires = 0, status = 1, causeOfDeath = NULL";
-
-            this.db.run(sql, (err) => {
-                if (err) reject(err);
-
-                resolve();
-            });
-        });
-    }
 
     deleteKillRequest(userID, guildID, channelID)
     {
@@ -261,6 +294,21 @@ module.exports = class Database{
 
                     return resolve(true);
                 });
+            });
+        });
+    }
+
+    deleteGuildSettings(guildID)
+    {
+        return new Promise((resolve, reject)=> {
+            let sql = "DELETE FROM " + SETTING_TABLE_NAME + " WHERE guildID=?";
+            let params = [guildID];
+
+            this.db.run(sql, params, (err)=>{
+                if(err)
+                    return reject(err);
+
+                return resolve();
             });
         });
     }
@@ -386,6 +434,48 @@ module.exports = class Database{
                     });
                 });
             });
+        });
+    }
+
+    resetUser(userID, guildID)
+    {
+        return new Promise((resolve, reject) => {
+            this.userExist(userID, guildID).then(() => {
+                let sql = "UPDATE "+USER_TABLE_NAME + guildID+" SET score = 0, backfires = 0, status = 1, causeOfDeath = NULL WHERE userID=?";
+                let params = [userID];
+
+                this.db.run(sql, params, (err) => {
+                    if (err) reject(err);
+
+                    resolve();
+                });
+            });
+        });
+    }
+
+    resetAllUsers(guildID)
+    {
+        return new Promise((resolve, reject) => {
+            let sql = "UPDATE "+USER_TABLE_NAME + guildID+" SET score = 0, backfires = 0, status = 1, causeOfDeath = NULL";
+
+            this.db.run(sql, (err) => {
+                if (err) reject(err);
+
+                resolve();
+            });
+        });
+    }
+
+    updateSetting(guildID, settingKey, value)
+    {
+        let sql = "UPDATE " + SETTING_TABLE_NAME + " SET ?=? WHERE guildID=?";
+        let params = [settingKey, value, guildID];
+
+        this.db.run(sql, params, (err) => {
+            if (err)
+                return reject(err);
+
+            resolve();
         });
     }
 }

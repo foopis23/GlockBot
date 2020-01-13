@@ -2,6 +2,7 @@ const sqlite3 = require("sqlite3");
 
 const USER_TABLE_NAME = "users";
 const KILL_REQUEST_TABLE_NAME = "killRequests";
+const SETTING_TABLE_NAME = "setting";
 
 module.exports = class Database{
 
@@ -51,6 +52,7 @@ module.exports = class Database{
         return new Promise(async (resolve, reject) => {
             await (this.createUserTable(guildID));
             await (this.createKillRequestTable(guildID));
+            await (this.createSettingTable(guildID));
             resolve();
         })
     }
@@ -70,6 +72,18 @@ module.exports = class Database{
     {
         return new Promise((resolve, reject) => {
             let sql = "CREATE TABLE IF NOT EXISTS " + KILL_REQUEST_TABLE_NAME + guildID + " (id INTEGER PRIMARY KEY AUTOINCREMENT, userID TEXT, channelID TEXT)";
+            this.db.run(sql, (err) => {
+                if (err) return reject(console.error(err.message));
+
+                return resolve();
+            });
+        });
+    }
+
+    createSettingTable()
+    {
+        return new Promise((resolve, reject) => {
+            let sql = "CREATE TABLE IF NOT EXISTS " + SETTING_TABLE_NAME  + " (id INTEGER PRIMARY KEY AUTOINCREMENT, guildID TEXT, lang TEXT, permaDeath INT, backfireAmount INT, scoreTime INT)";
             this.db.run(sql, (err) => {
                 if (err) return reject(console.error(err.message));
 
@@ -202,6 +216,28 @@ module.exports = class Database{
                     return resolve(row);
                 });
             });
+        });
+    }
+
+    getSettings(guildID)
+    {
+        return new Promise((resolve, reject) => {
+            let sql = "SELECT * FROM " + SETTING_TABLE_NAME + " WHERE guildID=?";
+            let params = [guildId];
+
+            this.db.get(sql, params, (err, row) => {
+                if (err) return reject(console.error(err.message));
+
+                return resolve(row);
+            });
+        });
+    }
+
+    getSetting(guildID, key)
+    {
+        return new Promise(async (resolve, reject) => {
+            let settings = await getSettings(guildID);
+            resolve(settings[key]);
         });
     }
 
@@ -385,6 +421,19 @@ module.exports = class Database{
                         resolve(row.score+1);
                     });
                 });
+            });
+        });
+    }
+
+    setSetting(guildID, key, value)
+    {
+        return new Promise(async (resolve, reject) => {
+            let sql = "UPDATE " + SETTING_TABLE_NAME + " SET " + key + " = ? WHERE guildID = ?";
+            let params = [value, guildID];
+            this.db.run(sql, params, (err) => {
+                if (err) return reject(console.error(err.message));
+
+                resolve();
             });
         });
     }

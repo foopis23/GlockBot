@@ -3,6 +3,8 @@
         "score": "[{user}] scored a point!",
         "shot": "[{user}] 🔫💀 [{killedUsers}]",
         "backfire": "[{user}]'s gun backfired",
+        "settingUpdated": "The setting has been updated!",
+        "settingFailed": "Could not update the setting!",
         "glocks": [
             "🔫"
         ],
@@ -38,6 +40,18 @@
                 "command": "debug",
                 "usage": "debug",
                 "description": "Gets Debug info you are having problems with your bot"
+            },
+            "set":
+            {
+                "command": "set",
+                "usage": "set {setting} {value}",
+                "description": "Set a setting value. settings: [lang TEXT, permaDeath INT, backfireAmount INT, scoreTime INT]"
+            },
+            "setting":
+            {
+                "command": "settings",
+                "usage": "setting",
+                "description": "Display Settings"
             },
             "help":
             {

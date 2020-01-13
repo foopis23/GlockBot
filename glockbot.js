@@ -40,7 +40,7 @@ function getAPIToken()
     return token;
 }
 
-function parseLang(lang, args)
+function parseLang(lang, args, code)
 {
     for(let i=0; i<LANG_VARS.vars.length; i++)
     {
@@ -63,6 +63,12 @@ function parseLang(lang, args)
     }
 
     return lang
+}
+
+async function sendMessage(channel, message, args)
+{
+    let lang = database.getSetting(channel.guild.id, "lang");
+    let message = parseLang()
 }
 
 function isGlock(msg)
@@ -228,6 +234,26 @@ const commandHandlers = {
         output += "\n```You can submit issues at " + LANG[LANG_CODE]["info"]["github"] + "/issues```";
         msg.channel.send(output);
     },
+    "set": async function(parsed, msg)
+    {
+        if (parsed.args.length<2 || parsed.args.length>2)
+        {
+            msg.channel.send(parseLang(LANG[LANG_CODE]["errorMessages"]["incorrectUsage"]) + parseLang(LANG[LANG_CODE]["commands"]["set"]["usage"]))
+            return resolve();
+        }
+
+        try{
+            let result = await database.set(args[0], args[1]);
+            msg.channel.send()
+        }catch(err)
+        {
+
+        }
+    },
+    "setting": async function(parsed, msg)
+    {
+
+    },
     "help": async function(parsed, msg)
     {
         let t = [[LANG[LANG_CODE]["commandTable"]["command"], LANG[LANG_CODE]["commandTable"]["usage"], LANG[LANG_CODE]["commandTable"]["desc"]]];
@@ -277,15 +303,6 @@ client.on('message', msg => {
 
     if (isGlock(msg)) {
         return glockHandler(msg);
-    }
-});
-
-client.on('guildMemberAdd', member => {
-    console.log("outside this works");
-    if (member.id == client.user.id)
-    {
-        console.log("this works");
-
     }
 });
 
